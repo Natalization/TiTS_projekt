@@ -1,19 +1,16 @@
 import socket
 import RPi.GPIO as GPIO
-from time import *
 
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BOARD) #ustawienie sposobu numeracji pinów na numery na płytce
 
-GPIO.setup(29, GPIO.OUT)
+GPIO.setup(29, GPIO.OUT) #ustawienie wyjsc
 GPIO.setup(31, GPIO.OUT)
 GPIO.setup(33, GPIO.OUT)
 GPIO.setup(35, GPIO.OUT)
 
 host = ''
 port = 5560
-password = "hand"
-
-storedValue = "Costam"
+password = "hand" #hasło do serwera, można zmieniać co każde odpalenie serwera
 
 def setupServer():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,17 +48,7 @@ def Verification(conn):
             conn.send(bytes("Password incorrect. Disconnecting from server", "utf-8"))
             conn.close()
             setupConnection()
-        
-    
-              
 
-def GET():
-    reply = storedValue
-    return reply
-
-def REPEAT():
-    reply = dataMessage[1]
-    return reply
 
 def HANDCLOSE():
     GPIO.output(29, GPIO.HIGH)
@@ -70,8 +57,6 @@ def HANDCLOSE():
     GPIO.output(35, GPIO.LOW)
     reply = "Hand is closing"
     return reply
-    #sleep(5)
-    #break
     
 def HANDOPEN():
     GPIO.output(29, GPIO.LOW)
@@ -80,23 +65,16 @@ def HANDOPEN():
     GPIO.output(35, GPIO.HIGH)
     reply = "Hand is opening"
     return reply
-    #sleep(5)
-    #break
+    
 
 def dataTransfer(conn):
-    # tutaj hasło
-    #Verification(conn)
-    #conn.send(bytes("Blabla", "utf-8"))
     while True:
         data = conn.recv(1024) #receive data
         data = data.decode('utf-8')
         dataMessage = data.split(' ', 1)
         command = dataMessage[0]
-        if command == 'GET':
-            reply = GET()
-        elif command == 'REPEAT':
-            reply = REPEAT(dataMessage)
-        elif command == 'HANDOPEN':
+         
+        if command == 'HANDOPEN':
             reply = HANDOPEN()
         elif command == 'HANDCLOSE':
             reply = HANDCLOSE()
@@ -105,7 +83,7 @@ def dataTransfer(conn):
             break
         elif command == 'KILL':
             print("Our server is closing")
-            GPIO.cleanup()
+            GPIO.cleanup() #ważne, żeby powrócić do ustawień początkowych aby przypadkiem nie zepsuć rpi
             s.close()
             break
         else:
@@ -119,7 +97,6 @@ s = setupServer()
 while True:
     try:
         conn = setupConnection()
-        #dataTransfer(conn)
         Verification(conn)
     except:
         break
